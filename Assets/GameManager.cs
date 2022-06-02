@@ -74,6 +74,7 @@ public class GameManager : MonoBehaviour
 
     public void ServeButtonPressed()
     {
+        //check toppings
         for (int i = 0; i < toppings.Length; i++)
         {
             if (currentOrder[i] != currentPizza[i])
@@ -86,6 +87,7 @@ public class GameManager : MonoBehaviour
 
         Debug.Log("valid pizza");
         ResetPizza();
+        GenerateOrder();
     }
 
     private void ResetPizza()
@@ -97,7 +99,5 @@ public class GameManager : MonoBehaviour
         {
             currentPizza[i] = "";
         }
-
-        GenerateOrder();
     }
 }
