@@ -7,7 +7,7 @@ public abstract class Topping : MonoBehaviour
 {
     public virtual void Entrance()
     {
-        transform.DOMoveY(10, 1).From();
+        transform.DOMoveY(5, 1).From();
 
     }
 

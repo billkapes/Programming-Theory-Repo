@@ -3,42 +3,55 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
+using UnityEngine.SceneManagement;
 
 
 public class GameManager : MonoBehaviour
 {
-    int orderIndex;
-    [SerializeField] Text[] OrderText;
+    [SerializeField] Text[] orderText;
+    [SerializeField] Text totalServedText;
     [SerializeField] GameObject[] panels;
     [SerializeField] GameObject topping1, topping2, topping3;
     [SerializeField] GameObject thePizza;
+    [SerializeField] GameObject gameOverText;
 
-    private readonly string[] toppings = { "pepperoni", "bacon", "mushroom" };
-    public string[] currentPizza = new string[3];
-    //public string[] currentOrder = new string[3];
-    public string[,] orderValues = new string[5,3];
-    float waitTimer;
+    readonly string[] toppings = { "pepperoni", "bacon", "mushroom" };
+    readonly float screenEdgeWidth = 9;
+
+    string[] currentPizza = new string[3];
+    string[,] orderValues = new string[5,3];
+    float inputWaitTimer, orderGenerateTime;
+    int orderCount, totalServedCount;
+    int orderIndex;
     
-
-
     void Start()
     {
         currentPizza[0] = "";
         currentPizza[1] = "";
         currentPizza[2] = "";
-        waitTimer = 1;
-        //OrderText[0].text = "";
-        orderIndex = 0;
+
+        inputWaitTimer = 1;
+        orderGenerateTime = 6;
+
         InitOrderValues();
-      
-       
+
+        thePizza.transform.GetChild(0).DOMoveX(-screenEdgeWidth, 0.5f).From();
+        thePizza.transform.GetChild(1).DOMoveX(-screenEdgeWidth, 0.75f).From();
+        thePizza.transform.GetChild(2).DOMoveX(-screenEdgeWidth, 1f).From();
+
+        Invoke(nameof(StartOrders), 1);
+    }
+
+    void StartOrders()
+    {
+        StartCoroutine(OrderTimer());
     }
 
     void Update()
     {
-        if (waitTimer >= 0)
+        if (inputWaitTimer >= 0)
         {
-            waitTimer -= Time.deltaTime;
+            inputWaitTimer -= Time.deltaTime;
         }
 
         if (Input.GetKeyDown(KeyCode.Space))
@@ -58,38 +71,61 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    IEnumerator OrderTimer()
+    {
+        for(; ; )
+        {
+            GenerateOrder();
+            orderCount++;
+            if (orderCount % 4 == 0)
+            {
+                orderGenerateTime = Mathf.Max(orderGenerateTime - 1, 3);
+            }
+            yield return new WaitForSeconds(orderGenerateTime);
+        }
+    }
+
     private void GenerateOrder()
     {
-        //search for unused panel
+        //search for unused panel or else game over
         int potentialIndex = FindUnusedPanelIndex();
         if (potentialIndex < 5)
         {
             orderIndex = potentialIndex;
             panels[orderIndex].SetActive(true);
-            OrderText[orderIndex].text = "";
-
+            orderText[orderIndex].text = "";
         }
         else
         {
-            //game over goes here
+            StopAllCoroutines();
+            gameOverText.SetActive(true);
+            totalServedText.text += " " + orderCount;
+            totalServedText.gameObject.SetActive(true);
+            Invoke(nameof(GoBackToTitle), 3);
         }
 
         //make random order
+        orderText[orderIndex].text = "1 Pizza\nToppings:\n";
         if (Random.Range(0, 2) > 0)
         {
             orderValues[orderIndex, 0] = toppings[0];
-            OrderText[orderIndex].text = toppings[0] + "\n";
+            orderText[orderIndex].text += "\t-" + toppings[0] + "\n";
         }
         if (Random.Range(0, 2) > 0)
         {
             orderValues[orderIndex, 1] = toppings[1];
-            OrderText[orderIndex].text += toppings[1] + "\n";
+            orderText[orderIndex].text += "\t-" + toppings[1] + "\n";
         }
         if (Random.Range(0, 2) > 0)
         {
             orderValues[orderIndex, 2] = toppings[2];
-            OrderText[orderIndex].text += toppings[2] + "\n";
+            orderText[orderIndex].text += "\t-" + toppings[2] + "\n";
         }
+    }
+
+    void GoBackToTitle()
+    {
+        SceneManager.LoadScene(0);
     }
 
     int FindUnusedPanelIndex()
@@ -106,66 +142,63 @@ public class GameManager : MonoBehaviour
 
     public void PepperoniButtonPressed()
     {
-        if (waitTimer > 0f)
+        if (inputWaitTimer > 0f)
         {
             return;
         }
         currentPizza[0] = toppings[0];
-        //currentPizza[0] = "pepperoni";
         topping1.SetActive(true);
-        waitTimer = 1;
+        inputWaitTimer = 1;
     }
 
     public void BaconButtonPressed()
     {
-        if (waitTimer > 0f)
+        if (inputWaitTimer > 0f)
         {
             return;
         }
         currentPizza[1] = toppings[1];
-        //currentPizza[1] = "bacon";
         topping2.SetActive(true);
-        waitTimer = 1;
+        inputWaitTimer = 1;
 
     }
     public void MushroomButtonPressed()
     {
-        if (waitTimer > 0f)
+        if (inputWaitTimer > 0f)
         {
             return;
         }
         currentPizza[2] = toppings[2];
-        //currentPizza[2] = "mushroom";
         topping3.SetActive(true);
-        waitTimer = 1;
+        inputWaitTimer = 1;
     }
 
     public void ServeButtonPressed()
     {
-        if (waitTimer > 0f)
+        if (inputWaitTimer > 0f)
         {
             return;
         }
 
+        //check for each active order
         for (int i = 0; i < 5; i++)
         {
             if (!panels[i].activeInHierarchy)
             {
                 continue;
             }
-        //check toppings
+            //checking toppings
             for (int j = 0; j < toppings.Length; j++)
             {
-                Debug.Log("checking p " + currentPizza[j]);
-                Debug.Log("checking o " + orderValues[i, j]);
                 if (orderValues[i, j] == currentPizza[j])
                 {
                     if (j == toppings.Length - 1)
                     {
-                        Debug.Log("valid pizza");
+                        //valid order for pizza found
+                        totalServedCount++;
                         ResetOrder(i);
-                        thePizza.transform.DOMoveX(15, 1).OnComplete(FinishServe);
-                        waitTimer = 1;
+                        thePizza.transform.DOMoveX(screenEdgeWidth, 1).OnComplete(FinishServe);
+                        inputWaitTimer = 2;
                         return;
                     }
                     continue;
@@ -173,20 +206,20 @@ public class GameManager : MonoBehaviour
                 else  
                     break;
             }
-
         }
-        Debug.Log("no valid found");
+        // no valid order found
         ResetPizza();
-
+        inputWaitTimer = 1;
     }
 
     void FinishServe()
     {
         thePizza.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
         ResetPizza();
-                
-        
-        thePizza.transform.DOMoveX(-15, 1).From();
+                       
+        thePizza.transform.GetChild(0).DOMoveX(-screenEdgeWidth, 0.5f).From();
+        thePizza.transform.GetChild(1).DOMoveX(-screenEdgeWidth, 0.75f).From();
+        thePizza.transform.GetChild(2).DOMoveX(-screenEdgeWidth, 1f).From();
     }
 
     private void ResetPizza()
@@ -206,7 +239,7 @@ public class GameManager : MonoBehaviour
         {
             orderValues[index, i] = "";
         }
-        OrderText[index].text = "";
+        orderText[index].text = "";
         panels[index].SetActive(false);
     }
 }
