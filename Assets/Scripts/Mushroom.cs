@@ -5,14 +5,9 @@ using DG.Tweening;
 
 public class Mushroom : Topping
 {
-    public override void Entrance()
-    {
-        transform.DOMoveX(5, 1).From();
-        base.Entrance();
-    }
-
     private void OnEnable()
     {
+        GetComponent<AudioSource>().Play();
         Entrance();
     }
 }
