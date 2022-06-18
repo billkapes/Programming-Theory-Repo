@@ -7,7 +7,7 @@ public class Pineapple : Topping
 {
     public override void Entrance()
     {
-        transform.DOMoveX(5, 1).From();
+        transform.DOMoveX(5, GameManager.StandardWaitTime).From();
         GetComponent<AudioSource>().Play();
         base.Entrance();
     }

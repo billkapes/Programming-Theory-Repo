@@ -5,12 +5,11 @@ using UnityEngine.UI;
 using DG.Tweening;
 using UnityEngine.SceneManagement;
 
-
 public class GameManager : MonoBehaviour
 {
     [SerializeField] Text[] orderText;
-    [SerializeField] Text totalServedText;
     [SerializeField] GameObject[] panels;
+    [SerializeField] Text totalServedText;
     [SerializeField] GameObject topping1, topping2, topping3, topping4, topping5;
     [SerializeField] GameObject thePizza;
     [SerializeField] GameObject gameOverText;
@@ -18,6 +17,7 @@ public class GameManager : MonoBehaviour
 
     readonly string[] toppings = { "pepperoni", "bacon", "mushroom", "onion", "pineapple" };
     readonly float screenEdgeWidth = 9;
+    public static float StandardWaitTime { get; private set; }
 
     string[] currentPizza = new string[5];
     string[,] orderValues = new string[5,5];
@@ -27,20 +27,22 @@ public class GameManager : MonoBehaviour
     
     void Start()
     {
+        StandardWaitTime = 0.66f;
+
         for (int i = 0; i < currentPizza.Length; i++)
         {
             currentPizza[i] = "";
         }
 
-        inputWaitTimer = 1;
+        inputWaitTimer = StandardWaitTime;
         orderGenerateTime = 6;
 
-        InitOrderValues();
+        ResetOrders();
 
         GetComponent<AudioSource>().PlayOneShot(swish);
-        thePizza.transform.GetChild(0).DOMoveX(-screenEdgeWidth, 0.5f).From();
-        thePizza.transform.GetChild(1).DOMoveX(-screenEdgeWidth, 0.75f).From();
-        thePizza.transform.GetChild(2).DOMoveX(-screenEdgeWidth, 1f).From();
+        thePizza.transform.GetChild(0).DOMoveX(-screenEdgeWidth, StandardWaitTime * 0.5f).From();
+        thePizza.transform.GetChild(1).DOMoveX(-screenEdgeWidth, StandardWaitTime * 0.75f).From();
+        thePizza.transform.GetChild(2).DOMoveX(-screenEdgeWidth, StandardWaitTime).From();
 
         Invoke(nameof(StartOrders), 1);
     }
@@ -55,22 +57,6 @@ public class GameManager : MonoBehaviour
         if (inputWaitTimer >= 0)
         {
             inputWaitTimer -= Time.deltaTime;
-        }
-
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            GenerateOrder();
-        }
-    }
-
-    void InitOrderValues()
-    {
-        for (int i = 0; i < 5; i++)
-        {
-            for (int j = 0; j < 5; j++)
-            {
-                orderValues[i, j] = "";
-            }
         }
     }
 
@@ -149,7 +135,7 @@ public class GameManager : MonoBehaviour
         }
         currentPizza[0] = toppings[0];
         topping1.SetActive(true);
-        inputWaitTimer = 1;
+        inputWaitTimer = StandardWaitTime;
     }
 
     public void BaconButtonPressed()
@@ -160,7 +146,7 @@ public class GameManager : MonoBehaviour
         }
         currentPizza[1] = toppings[1];
         topping2.SetActive(true);
-        inputWaitTimer = 1;
+        inputWaitTimer = StandardWaitTime;
 
     }
     public void MushroomButtonPressed()
@@ -171,7 +157,7 @@ public class GameManager : MonoBehaviour
         }
         currentPizza[2] = toppings[2];
         topping3.SetActive(true);
-        inputWaitTimer = 1;
+        inputWaitTimer = StandardWaitTime;
     }
 
     public void OnionButtonPressed()
@@ -182,7 +168,7 @@ public class GameManager : MonoBehaviour
         }
         currentPizza[3] = toppings[3];
         topping4.SetActive(true);
-        inputWaitTimer = 1;
+        inputWaitTimer = StandardWaitTime;
     }
 
     public void PineappleButtonPressed()
@@ -193,7 +179,7 @@ public class GameManager : MonoBehaviour
         }
         currentPizza[4] = toppings[4];
         topping5.SetActive(true);
-        inputWaitTimer = 1;
+        inputWaitTimer = StandardWaitTime;
     }
 
     public void ServeButtonPressed()
@@ -219,11 +205,11 @@ public class GameManager : MonoBehaviour
                     {
                         //valid order for pizza found
                         totalServedCount++;
-                        ResetOrder(i);
+                        ResetOrders(i);
                         GetComponent<AudioSource>().PlayOneShot(swish);
                         GetComponent<AudioSource>().PlayOneShot(correct);
-                        thePizza.transform.DOMoveX(screenEdgeWidth, 1).OnComplete(FinishServe);
-                        inputWaitTimer = 2;
+                        thePizza.transform.DOMoveX(screenEdgeWidth, StandardWaitTime).OnComplete(FinishServe);
+                        inputWaitTimer = StandardWaitTime * 2f;
                         return;
                     }
                     continue;
@@ -235,7 +221,7 @@ public class GameManager : MonoBehaviour
         // no valid order found
         GetComponent<AudioSource>().PlayOneShot(incorrect);
         ResetPizza();
-        inputWaitTimer = 1;
+        inputWaitTimer = StandardWaitTime;
     }
 
     void FinishServe()
@@ -243,9 +229,9 @@ public class GameManager : MonoBehaviour
         thePizza.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
         ResetPizza();
         GetComponent<AudioSource>().PlayOneShot(swish);
-        thePizza.transform.GetChild(0).DOMoveX(-screenEdgeWidth, 0.5f).From();
-        thePizza.transform.GetChild(1).DOMoveX(-screenEdgeWidth, 0.75f).From();
-        thePizza.transform.GetChild(2).DOMoveX(-screenEdgeWidth, 1f).From();
+        thePizza.transform.GetChild(0).DOMoveX(-screenEdgeWidth, StandardWaitTime * 0.5f).From();
+        thePizza.transform.GetChild(1).DOMoveX(-screenEdgeWidth, StandardWaitTime * 0.75f).From();
+        thePizza.transform.GetChild(2).DOMoveX(-screenEdgeWidth, StandardWaitTime * 1f).From();
     }
 
     private void ResetPizza()
@@ -261,7 +247,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void ResetOrder(int index)
+    private void ResetOrders(int index)
     {
         for (int i = 0; i < 5; i++)
         {
@@ -269,5 +255,16 @@ public class GameManager : MonoBehaviour
         }
         orderText[index].text = "";
         panels[index].SetActive(false);
+    }
+
+    private void ResetOrders()
+    {
+        for (int i = 0; i < 5; i++)
+        {
+            for (int j = 0; j < 5; j++)
+            {
+                orderValues[i, j] = "";
+            }
+        }
     }
 }

@@ -7,7 +7,7 @@ public class Onion : Topping
 {
     public override void Entrance()
     {
-        transform.DOMoveX(3, 1).From();
+        transform.DOMoveX(3, GameManager.StandardWaitTime).From();
         GetComponent<AudioSource>().Play();
         base.Entrance();
     }
