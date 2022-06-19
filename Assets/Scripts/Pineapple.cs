@@ -5,6 +5,7 @@ using DG.Tweening;
 
 public class Pineapple : Topping
 {
+// INHERITANCE
     public override void Entrance()
     {
         transform.DOMoveX(5, GameManager.StandardWaitTime).From();

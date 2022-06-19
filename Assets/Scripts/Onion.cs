@@ -5,6 +5,7 @@ using DG.Tweening;
 
 public class Onion : Topping
 {
+// INHERITANCE
     public override void Entrance()
     {
         transform.DOMoveX(3, GameManager.StandardWaitTime).From();

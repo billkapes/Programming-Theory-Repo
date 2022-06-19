@@ -25,4 +25,12 @@ public class Menu : MonoBehaviour
     {
         Application.Quit();
     }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.K))
+        {
+            ScreenCapture.CaptureScreenshot("Capture.png");
+        }
+    }
 }

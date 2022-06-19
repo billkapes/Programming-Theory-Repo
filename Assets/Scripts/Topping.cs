@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
 
+// INHERITANCE
 public abstract class Topping : MonoBehaviour
 {
     public virtual void Entrance()

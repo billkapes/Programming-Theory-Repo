@@ -17,6 +17,8 @@ public class GameManager : MonoBehaviour
 
     readonly string[] toppings = { "pepperoni", "bacon", "mushroom", "onion", "pineapple" };
     readonly float screenEdgeWidth = 9;
+
+    // ENCAPSULATION
     public static float StandardWaitTime { get; private set; }
 
     string[] currentPizza = new string[5];
@@ -37,6 +39,7 @@ public class GameManager : MonoBehaviour
         inputWaitTimer = StandardWaitTime;
         orderGenerateTime = 6;
 
+        // ABSTRACTION
         ResetOrders();
 
         GetComponent<AudioSource>().PlayOneShot(swish);
@@ -58,12 +61,18 @@ public class GameManager : MonoBehaviour
         {
             inputWaitTimer -= Time.deltaTime;
         }
+
+        if (Input.GetKeyDown(KeyCode.K))
+        {
+            ScreenCapture.CaptureScreenshot("Capture2.png");
+        }
     }
 
     IEnumerator OrderTimer()
     {
         for(; ; )
         {
+            // ABSTRACTION
             GenerateOrder();
             orderCount++;
             if (orderCount % 3 == 0)
@@ -76,8 +85,9 @@ public class GameManager : MonoBehaviour
 
     private void GenerateOrder()
     {
+
         //search for unused panel or else game over
-        int potentialIndex = FindUnusedPanelIndex();
+        int potentialIndex = FindUnusedPanelIndex(); // ABSTRACTION
         if (potentialIndex < 5)
         {
             orderIndex = potentialIndex;
@@ -247,6 +257,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    // POLYMORPHISM
     private void ResetOrders(int index)
     {
         for (int i = 0; i < 5; i++)
@@ -257,6 +268,7 @@ public class GameManager : MonoBehaviour
         panels[index].SetActive(false);
     }
 
+    // POLYMORPHISM
     private void ResetOrders()
     {
         for (int i = 0; i < 5; i++)
